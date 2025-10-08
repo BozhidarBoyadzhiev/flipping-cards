@@ -1,103 +1,227 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useEffect } from 'react'
+import FlipCard3D from '@/components/FlipCard3D'
+import AddCardModal from '@/components/AddCardModal'
+import CardListModal from '@/components/CardListModal'
+import { FlashCard } from '@/data/cards'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [cards, setCards] = useState<FlashCard[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isListModalOpen, setIsListModalOpen] = useState(false)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    fetchCards()
+  }, [])
+
+  const fetchCards = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/cards')
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch cards')
+      }
+      
+      const data = await response.json()
+      setCards(data)
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching cards:', err)
+      setError('Failed to load flashcards. Please refresh the page.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        goToPrevious()
+      } else if (event.key === 'ArrowRight') {
+        goToNext()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [currentIndex, cards.length])
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => 
+      prev === 0 ? cards.length - 1 : prev - 1
+    )
+  }
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => 
+      prev === cards.length - 1 ? 0 : prev + 1
+    )
+  }
+
+  const handleCardAdded = (newCard: FlashCard) => {
+    setCards([...cards, newCard])
+    setCurrentIndex(cards.length) // Go to the new card
+  }
+
+  const handleCardDeleted = (deletedId: number) => {
+    const newCards = cards.filter(card => card.id !== deletedId)
+    setCards(newCards)
+    
+    // Adjust current index if needed
+    if (currentIndex >= newCards.length && newCards.length > 0) {
+      setCurrentIndex(newCards.length - 1)
+    } else if (newCards.length === 0) {
+      setCurrentIndex(0)
+    }
+  }
+
+  const handleCardSelected = (index: number) => {
+    setCurrentIndex(index)
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-white text-xl">Loading flashcards...</p>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 text-xl mb-4">❌ {error}</p>
+          <button
+            onClick={fetchCards}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </main>
+    )
+  }
+
+  if (cards.length === 0) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="text-6xl mb-4">📚</div>
+          <h2 className="text-white text-2xl font-bold mb-2">No flashcards yet</h2>
+          <p className="text-gray-400 mb-6">Create your first card to get started!</p>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+          >
+            + Create First Card
+          </button>
+        </div>
+        <AddCardModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onCardAdded={handleCardAdded}
+        />
+      </main>
+    )
+  }
+
+  const currentCard = cards[currentIndex]
+
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black flex flex-col items-center justify-center p-4">
+
+      {/* Header */}
+      <div className="mb-4 text-center">
+        <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">
+          3D Language Flashcards 🎴✨
+        </h1>
+        <h5 className="text-2xl font-bold text-white mb-2">
+          💡Click the card to flip it • 🖱️ Drag to rotate the view • 🔍Scroll to zoom in/out • ⌨️ Use arrow keys to navigate
+        </h5>
+      </div>
+      
+      {/* 3D Card */}
+      <div className="w-full max-w-4xl">
+        <FlipCard3D key={currentCard.id} card={currentCard} />
+      </div>
+
+      {/* Navigation Controls */}
+      <div className="mt-4 flex items-center gap-6">
+        <button
+          onClick={goToPrevious}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          ← Previous
+        </button>
+
+        <div className="text-white font-semibold text-center">
+          <div className="text-3xl text-blue-400">{currentIndex + 1}</div>
+          <div className="text-sm text-gray-500">of {cards.length}</div>
+        </div>
+
+        <button
+          onClick={goToNext}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Next →
+        </button>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="mt-2 w-full max-w-2xl bg-gray-700 rounded-full h-2 overflow-hidden">
+        <div 
+          className="bg-gradient-to-r from-blue-500 to-green-500 h-full transition-all duration-300"
+          style={{ 
+            width: `${((currentIndex + 1) / cards.length) * 100}%` 
+          }}
+        />
+      </div>
+
+      {/* Action Buttons - Bottom Right */}
+      <div className="text-center mt-2 flex gap-3 z-10">
+        <button
+          onClick={() => setIsListModalOpen(true)}
+          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          View All ({cards.length})
+        </button>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add Card
+        </button>
+      </div>
+
+      {/* Modals */}
+      <AddCardModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onCardAdded={handleCardAdded}
+      />
+
+      <CardListModal
+        isOpen={isListModalOpen}
+        onClose={() => setIsListModalOpen(false)}
+        cards={cards}
+        onCardDeleted={handleCardDeleted}
+        onCardSelected={handleCardSelected}
+      />
+    </main>
+  )
 }

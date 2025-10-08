@@ -1,0 +1,22 @@
+// Prisma schema - defines our database structure
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// FlashCard model - represents a table in the database
+model FlashCard {
+  id         Int      @id @default(autoincrement())
+  front      String   // Front text (e.g., "Hello")
+  back       String   // Back text (e.g., "Hola")
+  frontLang  String   // Language of front (e.g., "English")
+  backLang   String   // Language of back (e.g., "Spanish")
+  category   String?  // Optional: category like "greetings", "food"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
