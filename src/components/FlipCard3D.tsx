@@ -4,21 +4,16 @@ import { useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Text, RoundedBox, PerspectiveCamera, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
-
-interface FlashCard {
-  front: string;
-  back: string;
-  frontLang: string;
-  backLang: string;
-  category?: string;
-}
+import Modal from './UpdateCardModal'
+import { FlashCard } from '@/data/cards'
 
 interface Card3DProps {
   card: FlashCard;
   position: [number, number, number];
+  onOpenModal: () => void;
 }
 
-function Card3D({ card, position }: Card3DProps) {
+function Card3D({ card, position, onOpenModal }: Card3DProps) {
   const groupRef = useRef<THREE.Group>(null)
   const [isFlipped, setIsFlipped] = useState(false)
   const [targetRotation, setTargetRotation] = useState(0)
@@ -31,9 +26,13 @@ function Card3D({ card, position }: Card3DProps) {
     }
   })
 
-  const handleClick = () => {
+  const handleLeftClick = () => {
     setIsFlipped(!isFlipped)
     setTargetRotation(isFlipped ? 0 : Math.PI)
+  }
+
+  const handleRightClick = (e: any) => {
+    onOpenModal()
   }
 
   // Create gradient texture for front
@@ -47,7 +46,7 @@ function Card3D({ card, position }: Card3DProps) {
   ))
 
   return (
-    <group ref={groupRef} position={position} onClick={handleClick}>
+    <group ref={groupRef} position={position} onClick={handleLeftClick} onContextMenu={handleRightClick}>
       {/* Front side main card */}
       <RoundedBox
         args={[12, 7, 0.2]}
@@ -237,15 +236,11 @@ interface FlipCard3DProps {
 }
 
 export default function FlipCard3D({ card }: FlipCard3DProps) {
-  const sampleCard: FlashCard = {
-    front: 'Hello',
-    back: 'Hola',
-    frontLang: 'English',
-    backLang: 'Spanish',
-    category: 'Greetings'
-  }
 
-  const displayCard = card || sampleCard
+  const displayCard = card
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const openModal = () => setIsModalOpen(true)
+  const closeModal = () => setIsModalOpen(false)
 
   return (
     <div className="w-full h-[500px]">
@@ -259,7 +254,7 @@ export default function FlipCard3D({ card }: FlipCard3DProps) {
         <pointLight position={[-15, 10, -10]} intensity={1.5} color="#8b5cf6" />
         <pointLight position={[15, -10, -10]} intensity={1.5} color="#06b6d4" />
         <pointLight position={[0, 0, 10]} intensity={0.8} color="#d946ef" />
-        <Card3D card={displayCard} position={[0, 0, 0]} />
+        <Card3D card={displayCard} position={[0, 0, 0]} onOpenModal={openModal} />
         <OrbitControls
           enableZoom={true}
           enablePan={false}
@@ -268,6 +263,12 @@ export default function FlipCard3D({ card }: FlipCard3DProps) {
           autoRotate={false}
         />
       </Canvas>
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={closeModal}
+        card={displayCard}
+        onCardUpdated={closeModal}
+      />
     </div>
   )
 }

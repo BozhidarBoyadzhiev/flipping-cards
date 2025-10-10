@@ -3,13 +3,14 @@ import { FlashCard } from '@/data/cards';
 import ModalWrapper from './ModalWrapper';
 import CardForm from './CardForm';
 
-interface AddCardModalProps {
+interface UpdateCardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCardAdded: (card: FlashCard) => void;
+  card: FlashCard;
+  onCardUpdated: (card: FlashCard) => void;
 }
 
-export default function AddCardModal({ isOpen, onClose, onCardAdded }: AddCardModalProps) {
+export default function UpdateCardModal({ isOpen, onClose, card, onCardUpdated }: UpdateCardModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,8 +24,8 @@ export default function AddCardModal({ isOpen, onClose, onCardAdded }: AddCardMo
     setError(null);
 
     try {
-      const response = await fetch('/api/cards', {
-        method: 'POST',
+      const response = await fetch(`/api/cards/${card.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           front: cardData.front.trim(),
@@ -35,28 +36,29 @@ export default function AddCardModal({ isOpen, onClose, onCardAdded }: AddCardMo
         })
       });
 
-      if (!response.ok) throw new Error('Failed to create card');
+      if (!response.ok) throw new Error('Failed to update card');
 
-      const newCard = await response.json();
-      onCardAdded(newCard);
+      const updatedCard = await response.json();
+      onCardUpdated(updatedCard);
       onClose();
     } catch (err) {
-      console.error('Error creating card:', err);
-      setError('Failed to create card. Please try again.');
+      console.error('Error updating card:', err);
+      setError('Failed to update card. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Add New Card">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Update Card">
       <CardForm
+        initialData={card}
         onSubmit={handleSubmit}
         onCancel={onClose}
         loading={loading}
         error={error}
-        submitButtonText={loading ? 'Creating...' : 'Create Card'}
-        submitButtonColor="blue"
+        submitButtonText={loading ? 'Updating...' : 'Update Card'}
+        submitButtonColor="purple"
       />
     </ModalWrapper>
   );
