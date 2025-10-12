@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FlashCard } from '@/data/cards';
-import ModalWrapper from './ModalWrapper';
-import CardForm from './CardForm';
+import { ModalWrapper, CardForm } from './';
+import { createCard } from '@/utils';
 
 interface AddCardModalProps {
   isOpen: boolean;
@@ -23,21 +23,7 @@ export default function AddCardModal({ isOpen, onClose, onCardAdded }: AddCardMo
     setError(null);
 
     try {
-      const response = await fetch('/api/cards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          front: cardData.front.trim(),
-          back: cardData.back.trim(),
-          frontLang: cardData.frontLang,
-          backLang: cardData.backLang,
-          category: cardData.category?.trim() || null
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to create card');
-
-      const newCard = await response.json();
+      const newCard = await createCard(cardData);
       onCardAdded(newCard);
       onClose();
     } catch (err) {

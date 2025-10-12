@@ -10,7 +10,7 @@ export default function ModalWrapper({ isOpen, onClose, title, children }: Modal
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-700">
+      <div className="bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full p-6 border border-gray-700">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">{title}</h2>
           <button

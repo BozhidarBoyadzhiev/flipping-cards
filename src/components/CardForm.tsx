@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Select from 'react-select';
-import { dropdownStyle } from '@/utils/selectStyle';
+import { dropdownStyle } from '@/utils';
 import { LanguageOption, languageOptions } from '@/data/languages';
 import { FlashCard } from '@/data/cards';
 

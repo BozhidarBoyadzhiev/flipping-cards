@@ -1,11 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, useMemo, memo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Text, RoundedBox, PerspectiveCamera, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
-import Modal from './UpdateCardModal'
+import { UpdateCardModal } from './'
 import { FlashCard } from '@/data/cards'
+import { createCardMaterial, createGlowMaterial } from '@/three'
 
 interface Card3DProps {
   card: FlashCard;
@@ -13,10 +14,16 @@ interface Card3DProps {
   onOpenModal: () => void;
 }
 
-function Card3D({ card, position, onOpenModal }: Card3DProps) {
+const Card3D = memo(function Card3D({ card, position, onOpenModal }: Card3DProps) {
   const groupRef = useRef<THREE.Group>(null)
   const [isFlipped, setIsFlipped] = useState(false)
   const [targetRotation, setTargetRotation] = useState(0)
+
+  // Memoize materials to prevent recreation on every render
+  const frontMaterial = useMemo(() => createCardMaterial('front'), [])
+  const backMaterial = useMemo(() => createCardMaterial('back'), [])
+  const frontGlowMaterial = useMemo(() => createGlowMaterial('#8b5cf6', '#8b5cf6'), [])
+  const backGlowMaterial = useMemo(() => createGlowMaterial('#3b82f6', '#06b6d4'), [])
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -35,16 +42,6 @@ function Card3D({ card, position, onOpenModal }: Card3DProps) {
     onOpenModal()
   }
 
-  // Create gradient texture for front
-  const frontTexture = new THREE.CanvasTexture(createGradientCanvas(
-    '#6366f1', '#8b5cf6', '#d946ef'
-  ))
-  
-  // Create gradient texture for back
-  const backTexture = new THREE.CanvasTexture(createGradientCanvas(
-    '#06b6d4', '#3b82f6', '#6366f1'
-  ))
-
   return (
     <group ref={groupRef} position={position} onClick={handleLeftClick} onContextMenu={handleRightClick}>
       {/* Front side main card */}
@@ -54,15 +51,7 @@ function Card3D({ card, position, onOpenModal }: Card3DProps) {
         smoothness={4}
         position={[0, 0, 0.1]}
       >
-        <meshPhysicalMaterial
-          map={frontTexture}
-          metalness={0.4}
-          roughness={0.2}
-          clearcoat={1}
-          clearcoatRoughness={0.1}
-          transparent={true}
-          opacity={0.95}
-        />
+        <primitive object={frontMaterial} />
       </RoundedBox>
       
       {/* Front glow effect */}
@@ -72,15 +61,7 @@ function Card3D({ card, position, onOpenModal }: Card3DProps) {
         smoothness={4}
         position={[0, 0, 0.01]}
       >
-        <meshStandardMaterial
-          color="#8b5cf6"
-          metalness={0.9}
-          roughness={0.1}
-          emissive="#8b5cf6"
-          emissiveIntensity={0.5}
-          transparent={true}
-          opacity={0.6}
-        />
+        <primitive object={frontGlowMaterial} />
       </RoundedBox>
 
       {/* Front text elements */}
@@ -140,15 +121,7 @@ function Card3D({ card, position, onOpenModal }: Card3DProps) {
         position={[0, 0, -0.1]}
         rotation={[0, Math.PI, 0]}
       >
-        <meshPhysicalMaterial
-          map={backTexture}
-          metalness={0.4}
-          roughness={0.2}
-          clearcoat={1}
-          clearcoatRoughness={0.1}
-          transparent={true}
-          opacity={0.95}
-        />
+        <primitive object={backMaterial} />
       </RoundedBox>
       
       {/* Back glow effect */}
@@ -159,15 +132,7 @@ function Card3D({ card, position, onOpenModal }: Card3DProps) {
         position={[0, 0, -0.01]}
         rotation={[0, Math.PI, 0]}
       >
-        <meshStandardMaterial
-          color="#3b82f6"
-          metalness={0.9}
-          roughness={0.1}
-          emissive="#06b6d4"
-          emissiveIntensity={0.5}
-          transparent={true}
-          opacity={0.6}
-        />
+        <primitive object={backGlowMaterial} />
       </RoundedBox>
 
       {/* Back text elements */}
@@ -211,36 +176,33 @@ function Card3D({ card, position, onOpenModal }: Card3DProps) {
       </Text>
     </group>
   )
-}
-
-// Helper function to create gradient canvas
-function createGradientCanvas(color1: string, color2: string, color3: string) {
-  const canvas = document.createElement('canvas')
-  canvas.width = 512
-  canvas.height = 512
-  const ctx = canvas.getContext('2d')!
-  
-  const gradient = ctx.createLinearGradient(0, 0, 512, 512)
-  gradient.addColorStop(0, color1)
-  gradient.addColorStop(0.5, color2)
-  gradient.addColorStop(1, color3)
-  
-  ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, 512, 512)
-  
-  return canvas
-}
+})
 
 interface FlipCard3DProps {
   card: FlashCard;
+  onCardUpdated?: (updatedCard: FlashCard) => void;
 }
 
-export default function FlipCard3D({ card }: FlipCard3DProps) {
+const FlipCard3D = memo(function FlipCard3D({ card, onCardUpdated }: FlipCard3DProps) {
+  // Create internal state that holds the card data
+  const [displayCard, setDisplayCard] = useState(card); // Initially set to the prop
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
-  const displayCard = card
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  useEffect(() => {
+    setDisplayCard(card);
+  }, [card]);
+
+  const handleCardUpdated = (updatedCard: FlashCard) => {
+    if (onCardUpdated) {
+      onCardUpdated(updatedCard);
+    }
+
+    setDisplayCard(updatedCard);
+    closeModal();
+  };
 
   return (
     <div className="w-full h-[500px]">
@@ -254,6 +216,7 @@ export default function FlipCard3D({ card }: FlipCard3DProps) {
         <pointLight position={[-15, 10, -10]} intensity={1.5} color="#8b5cf6" />
         <pointLight position={[15, -10, -10]} intensity={1.5} color="#06b6d4" />
         <pointLight position={[0, 0, 10]} intensity={0.8} color="#d946ef" />
+        {/* Use displayCard instead of card */}
         <Card3D card={displayCard} position={[0, 0, 0]} onOpenModal={openModal} />
         <OrbitControls
           enableZoom={true}
@@ -263,12 +226,14 @@ export default function FlipCard3D({ card }: FlipCard3DProps) {
           autoRotate={false}
         />
       </Canvas>
-      <Modal 
+      <UpdateCardModal 
         isOpen={isModalOpen} 
         onClose={closeModal}
         card={displayCard}
-        onCardUpdated={closeModal}
+        onCardUpdated={handleCardUpdated}
       />
     </div>
-  )
-}
+  );
+})
+
+export default FlipCard3D

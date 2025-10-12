@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FlashCard } from '@/data/cards';
-import ModalWrapper from './ModalWrapper';
-import CardForm from './CardForm';
+import { ModalWrapper, CardForm } from './';
+import { updateCard } from '@/utils';
 
 interface UpdateCardModalProps {
   isOpen: boolean;
@@ -24,21 +24,7 @@ export default function UpdateCardModal({ isOpen, onClose, card, onCardUpdated }
     setError(null);
 
     try {
-      const response = await fetch(`/api/cards/${card.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          front: cardData.front.trim(),
-          back: cardData.back.trim(),
-          frontLang: cardData.frontLang,
-          backLang: cardData.backLang,
-          category: cardData.category?.trim() || null
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to update card');
-
-      const updatedCard = await response.json();
+      const updatedCard = await updateCard(card.id, cardData);
       onCardUpdated(updatedCard);
       onClose();
     } catch (err) {
