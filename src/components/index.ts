@@ -12,6 +12,7 @@ export { default as ModalWrapper } from './ModalWrapper';
 export { default as AddCardModal } from './AddCardModal';
 export { default as UpdateCardModal } from './UpdateCardModal';
 export { default as CardListModal } from './CardListModal';
+export { default as SettingsModal } from './SettingsModal';
 
 // Utility Components
 export { default as EmptyState } from './EmptyState';

@@ -1,10 +1,11 @@
 'use client'
 
-import { useRef, useState, useEffect, useMemo, memo } from 'react'
+import { useRef, useState, useEffect, useMemo, memo, useLayoutEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Text, RoundedBox, PerspectiveCamera, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { Button, UpdateCardModal } from './'
+import { useSettings } from '@/hooks/useSettings'
 import { FlashCard } from '@/data/cards'
 import { createCardMaterial, createGlowMaterial } from '@/three'
 
@@ -38,7 +39,30 @@ const Card3D = memo(function Card3D({ card, position, onOpenModal }: Card3DProps
     setTargetRotation(isFlipped ? 0 : Math.PI)
   }
 
+  const { settings } = useSettings()
+
+  // Sync initial side with settings and when card changes
+  useLayoutEffect(() => {
+    const showBack = settings.defaultCardSide === 'back'
+    setIsFlipped(showBack)
+    setTargetRotation(showBack ? Math.PI : 0)
+    if (groupRef.current) {
+      groupRef.current.rotation.y = showBack ? Math.PI : 0
+    }
+  }, [settings.defaultCardSide, card.id])
+
   const handleRightClick = (e: any) => {
+    if (!settings.rightClickEditEnabled) {
+      // Prevent context menu and editing when disabled
+      try {
+        if (e?.nativeEvent?.preventDefault) {
+          e.nativeEvent.preventDefault()
+        } else if (e?.preventDefault) {
+          e.preventDefault()
+        }
+      } catch (_) {}
+      return
+    }
     onOpenModal()
   }
 
