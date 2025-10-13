@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useMemo, memo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Text, RoundedBox, PerspectiveCamera, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
-import { UpdateCardModal } from './'
+import { Button, UpdateCardModal } from './'
 import { FlashCard } from '@/data/cards'
 import { createCardMaterial, createGlowMaterial } from '@/three'
 
@@ -186,10 +186,17 @@ interface FlipCard3DProps {
 const FlipCard3D = memo(function FlipCard3D({ card, onCardUpdated }: FlipCard3DProps) {
   // Create internal state that holds the card data
   const [displayCard, setDisplayCard] = useState(card); // Initially set to the prop
-  
+  const controlsRef = useRef<any>(null);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const handleResetView = () => {
+    if (controlsRef.current) {
+      controlsRef.current.reset();
+    }
+  };
 
   useEffect(() => {
     setDisplayCard(card);
@@ -205,7 +212,7 @@ const FlipCard3D = memo(function FlipCard3D({ card, onCardUpdated }: FlipCard3DP
   };
 
   return (
-    <div className="w-full h-[500px]">
+    <div className="w-full h-[500px] relative">
       <Canvas
         gl={{ alpha: true, antialias: true }}
         style={{ background: 'transparent' }}
@@ -219,6 +226,7 @@ const FlipCard3D = memo(function FlipCard3D({ card, onCardUpdated }: FlipCard3DP
         {/* Use displayCard instead of card */}
         <Card3D card={displayCard} position={[0, 0, 0]} onOpenModal={openModal} />
         <OrbitControls
+          ref={controlsRef}
           enableZoom={true}
           enablePan={false}
           minDistance={5}
@@ -226,6 +234,29 @@ const FlipCard3D = memo(function FlipCard3D({ card, onCardUpdated }: FlipCard3DP
           autoRotate={false}
         />
       </Canvas>
+      <Button
+        onClick={handleResetView}
+        className="absolute bottom-4 right-4 z-10 bg-slate-800/80 hover:bg-slate-700/90 text-cyan-400 hover:text-cyan-300 px-3 py-2 rounded-lg backdrop-blur-sm border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-cyan-500/20 flex items-center gap-2"
+        title="Reset camera view"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        >
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M21 3v5h-5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M3 21v-5h5"/>
+        </svg>
+        Reset View
+      </Button>
       <UpdateCardModal 
         isOpen={isModalOpen} 
         onClose={closeModal}
