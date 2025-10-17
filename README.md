@@ -60,7 +60,7 @@
 
 ## 🎥 Demo
 
-Add a short demo GIF or link here when ready.
+You can visit the demo [here](https://flipping-cards-lmww.vercel.app/)
 
 ## 🚀 Installation and Setup
 
