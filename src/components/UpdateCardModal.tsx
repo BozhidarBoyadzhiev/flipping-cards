@@ -45,6 +45,7 @@ export default function UpdateCardModal({ isOpen, onClose, card, onCardUpdated }
         error={error}
         submitButtonText={loading ? 'Updating...' : 'Update Card'}
         submitButtonColor="purple"
+        showAddMultiple={false}
       />
     </ModalWrapper>
   );

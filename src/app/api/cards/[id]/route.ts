@@ -80,10 +80,11 @@ export async function PUT(
         { status: 400 }
       )
     }
-    
+    const { id } = await params
+
     const updatedCard = await prisma.flashCard.update({
       where: {
-        id: parseInt(params.id)
+        id: parseInt(id)
       },
       data: {
         front: body.front,

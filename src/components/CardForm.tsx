@@ -3,15 +3,17 @@ import Select from 'react-select';
 import { dropdownStyle } from '@/utils';
 import { LanguageOption, languageOptions } from '@/data/languages';
 import { FlashCard } from '@/data/cards';
+import { AddMultipleCardsModal } from '.';
 
 interface CardFormProps {
-  initialData?: FlashCard; // Optional - only for update
+  initialData?: FlashCard;
   onSubmit: (card: Omit<FlashCard, 'id'>) => void;
   onCancel: () => void;
   loading: boolean;
   error: string | null;
   submitButtonText: string;
   submitButtonColor: 'blue' | 'purple';
+  showAddMultiple?: boolean;
 }
 
 export default function CardForm({ 
@@ -21,13 +23,15 @@ export default function CardForm({
   loading, 
   error,
   submitButtonText,
-  submitButtonColor 
+  submitButtonColor,
+  showAddMultiple
 }: CardFormProps) {
   const [front, setFront] = useState(initialData?.front || '');
   const [back, setBack] = useState(initialData?.back || '');
   const [frontLang, setFrontLang] = useState(initialData?.frontLang || 'English');
   const [backLang, setBackLang] = useState(initialData?.backLang || 'Vietnamese');
   const [category, setCategory] = useState(initialData?.category || '');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,8 +147,22 @@ export default function CardForm({
           >
             {submitButtonText}
           </button>
+          {showAddMultiple && (
+                      <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className={`flex-1 bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+            disabled={loading}
+          >
+            Add multiple
+          </button>
+          )}
         </div>
       </form>
+      <AddMultipleCardsModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </>
   );
 }

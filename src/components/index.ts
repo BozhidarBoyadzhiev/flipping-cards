@@ -10,6 +10,7 @@ export { default as CardForm } from './CardForm';
 // Modal Components
 export { default as ModalWrapper } from './ModalWrapper';
 export { default as AddCardModal } from './AddCardModal';
+export { default as AddMultipleCardsModal } from './AddMultipleCardsModal';
 export { default as UpdateCardModal } from './UpdateCardModal';
 export { default as CardListModal } from './CardListModal';
 export { default as SettingsModal } from './SettingsModal';

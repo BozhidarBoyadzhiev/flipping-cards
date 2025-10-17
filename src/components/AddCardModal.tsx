@@ -43,6 +43,7 @@ export default function AddCardModal({ isOpen, onClose, onCardAdded }: AddCardMo
         error={error}
         submitButtonText={loading ? 'Creating...' : 'Create Card'}
         submitButtonColor="blue"
+        showAddMultiple={true}
       />
     </ModalWrapper>
   );
