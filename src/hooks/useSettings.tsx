@@ -30,7 +30,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(raw) as Settings
         setSettings({ ...defaultSettings, ...parsed })
       }
-    } catch (_) {
+    } catch {
       // ignore corrupted storage
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,7 +42,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('app.settings', JSON.stringify(settings))
       }
-    } catch (_) {
+    } catch {
       // ignore storage failures
     }
   }, [settings])

@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect, useMemo, memo, useLayoutEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Text, RoundedBox, PerspectiveCamera, OrbitControls } from '@react-three/drei'
+import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
 import * as THREE from 'three'
 import { Button, UpdateCardModal } from './'
 import { useSettings } from '@/hooks/useSettings'
@@ -51,7 +52,7 @@ const Card3D = memo(function Card3D({ card, position, onOpenModal }: Card3DProps
     }
   }, [settings.defaultCardSide, card.id])
 
-  const handleRightClick = (e: any) => {
+  const handleRightClick = (e: React.MouseEvent) => {
     if (!settings.rightClickEditEnabled) {
       // Prevent context menu and editing when disabled
       try {
@@ -60,7 +61,8 @@ const Card3D = memo(function Card3D({ card, position, onOpenModal }: Card3DProps
         } else if (e?.preventDefault) {
           e.preventDefault()
         }
-      } catch (_) {}
+      } catch {
+      }
       return
     }
     onOpenModal()
@@ -210,7 +212,7 @@ interface FlipCard3DProps {
 const FlipCard3D = memo(function FlipCard3D({ card, onCardUpdated }: FlipCard3DProps) {
   // Create internal state that holds the card data
   const [displayCard, setDisplayCard] = useState(card); // Initially set to the prop
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<OrbitControlsType>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
