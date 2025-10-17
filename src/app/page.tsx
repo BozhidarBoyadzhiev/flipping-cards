@@ -11,6 +11,7 @@ import {
 } from '@/components'
 import { useCards, useCardNavigation } from '@/hooks'
 import { useSettings } from '@/hooks/useSettings'
+import { FlashCard } from '@/data/cards' // ✅ Import the FlashCard type
 
 export default function Home() {
   const { cards, loading, error, addCard, updateCard, deleteCard, refetch } = useCards()
@@ -21,7 +22,8 @@ export default function Home() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const { settings, updateSettings } = useSettings()
 
-  const handleCardAdded = (newCard: any) => {
+  // ✅ FIXED: Changed 'any' to 'FlashCard'
+  const handleCardAdded = (newCard: FlashCard) => {
     addCard(newCard)
     goToCard(cards.length) // Go to the new card
   }
@@ -30,7 +32,8 @@ export default function Home() {
     deleteCard(deletedId)
   }
 
-  const handleCardUpdated = (updatedCard: any) => {
+  // ✅ FIXED: Changed 'any' to 'FlashCard'
+  const handleCardUpdated = (updatedCard: FlashCard) => {
     updateCard(updatedCard)
     incrementVersion()
   }
