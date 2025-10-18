@@ -14,6 +14,7 @@ export { default as AddMultipleCardsModal } from './AddMultipleCardsModal';
 export { default as UpdateCardModal } from './UpdateCardModal';
 export { default as CardListModal } from './CardListModal';
 export { default as SettingsModal } from './SettingsModal';
+export { default as ExportModal } from './ExportModal';
 
 // Utility Components
 export { default as EmptyState } from './EmptyState';
