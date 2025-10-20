@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import Select from 'react-select';
-import { dropdownStyle } from '@/utils';
-import { LanguageOption, languageOptions } from '@/data/languages';
+import Button from './ui/Button';
+import LoadingSpinner from './LoadingSpinner';
+import { FormSelect } from './ui/form/FormSelect';
+import { languageOptions, type LanguageOption } from '@/data/languages';
 import { FlashCard } from '@/data/cards';
 import { AddMultipleCardsModal } from '.';
 
@@ -59,40 +60,36 @@ export default function CardForm({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">
+        <div className="space-y-2">
+          <label htmlFor="frontText" className="block text-sm font-semibold text-gray-300">
             Front Text
           </label>
-          <input
-            type="text"
+          <textarea
+            id="frontText"
+            className="w-full p-2 bg-gray-700 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={front}
             onChange={(e) => setFront(e.target.value)}
-            placeholder="e.g., Hello"
-            className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             disabled={loading}
+            rows={4}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">
-            Front Language
-          </label>
-          <Select<LanguageOption>
+        <div className="space-y-2">
+          <FormSelect<LanguageOption>
+            label="Front Language"
             value={getFrontLangDefault()}
             options={languageOptions}
-            className="react-select-container"
-            classNamePrefix="react-select"
             isDisabled={loading}
-            styles={dropdownStyle}
             onChange={(option) => setFrontLang(option?.value || 'English')}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">
+        <div className="space-y-2">
+          <label htmlFor="backText" className="block text-sm font-semibold text-gray-300">
             Back Text
           </label>
           <input
+            id="backText"
             type="text"
             value={back}
             onChange={(e) => setBack(e.target.value)}
@@ -102,26 +99,22 @@ export default function CardForm({
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">
-            Back Language
-          </label>
-          <Select<LanguageOption>
+        <div className="space-y-2">
+          <FormSelect<LanguageOption>
+            label="Back Language"
             value={getBackLangDefault()}
             options={languageOptions}
-            className="react-select-container"
-            classNamePrefix="react-select"
             isDisabled={loading}
-            styles={dropdownStyle}
             onChange={(option) => setBackLang(option?.value || 'Vietnamese')}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">
+        <div className="space-y-2">
+          <label htmlFor="category" className="block text-sm font-semibold text-gray-300">
             Category <span className="text-gray-500">(optional)</span>
           </label>
           <input
+            id="category"
             type="text"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -129,9 +122,7 @@ export default function CardForm({
             className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             disabled={loading}
           />
-        </div>
-
-        <div className="flex gap-3 pt-4">
+        </div>        <div className="flex gap-3 pt-4">
           <button
             type="button"
             onClick={onCancel}

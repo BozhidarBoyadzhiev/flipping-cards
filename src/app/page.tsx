@@ -12,7 +12,7 @@ import {
 } from '@/components'
 import { useCards, useCardNavigation } from '@/hooks'
 import { useSettings } from '@/hooks/useSettings'
-import { FlashCard } from '@/data/cards'
+import type { FlashCard } from '@/types/cards'
 
 export default function Home() {
   const { cards, loading, error, addCard, updateCard, deleteCard, refetch } = useCards()
@@ -99,6 +99,7 @@ export default function Home() {
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
+        cards={cards}
       />
       <AddCardModal
         isOpen={isAddModalOpen}
